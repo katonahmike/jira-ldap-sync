@@ -1,0 +1,23 @@
+{
+    "debug":true,
+    "testmode":true, //Important to keep testMode on until you confirm that things work. Prevents accidental deletion from JIRA.
+    
+    "ldap" : {
+                   "host" : "ldap.somedomain.com:389", //Host should be in the form of host.domain.com:port (:port is optional)
+            "bindstring" : "cn=john doe,ou=oper,ou=users,ou=minnesota,dc=na,dc=somedomain,dc=com", //Usually includes cn, dc and ou. You will need to experiment
+               "password" : "supersecret",  //Based on the bindstring above, this is john doe's password. Best to use a dedicated system account
+            "searchbase" : "dc=somedomain,dc=com", //Similar format to bind string. I only use dc for mine. You may need to experiment.
+          "searchfilter" : "(&(userprincipalname=REPLACEWITHJIRAEMAIL))", //Whatever ldap/ad property has the email address leave the =REPLACEWITHJIRAEMAIL part alone; the script needs it 
+           "searchscope" : "sub",
+        "activeproperty" : "userAccountControl",
+           "activevalue" : "512"
+    },
+    
+    "jira" : {
+        
+              "host" : "https://somedomain.atlassian.net",  //Put your JIRA cloud URL here
+              "user" : "john.doe@somedomain.com",  //Your JIRA email or username. Best to use a dedicatd JIRA account with admin rights for this so you don't expose yours
+          "password" : "supersecret",
+        "useragent" : "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36" //In case JIRA cares
+    }
+}
