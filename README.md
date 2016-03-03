@@ -8,11 +8,15 @@ JIRA cloud has no facility for enterprises to authenticate users against a centr
 This Perl script uses the JIRA API to find users and compare them to your internal AD or LDAP directory. It was designed to take the JIRA email address and compare it to the UserPrincipalName attribute in AD (commonly set to the user's email address for Office365) to locate the account. It then checks if the UserAccountControl property is anything other than 512 (normal account), and if so, disables the user in JIRA by removing her from all JIRA/Confluence groups, effectively disabling the user and freeing up JIRA/Confluence licenses on your subscription.
 
 ## Installation
-I'm running this successfuly with Perl 5.18. It requires the following libraries to be available:
-* JSON;
-* LWP::UserAgent;
-* Net::LDAP;
-* MIME::Base64;
+I'm running this successfuly with Perl 5.18. It requires the following libraries:
+* JSON
+* LWP::UserAgent
+* Net::LDAP
+* MIME::Base64
+* Email::Sender::Simple
+* Email::Sender::Transport::SMTP
+* Email::Simple::Markdown
+* Try::Tiny
 
 ## Usage
 * Edit jira_sync.json

@@ -10,6 +10,10 @@ use JSON;
 use LWP::UserAgent;
 use Net::LDAP;
 use MIME::Base64;
+use Email::Sender::Simple qw(sendmail);
+use Email::Sender::Transport::SMTP qw();
+use Email::Simple::Markdown;
+use Try::Tiny;
 
 # Load Configurations and set basic params
 my $config=LoadConfig('jira_sync.json');
@@ -19,6 +23,7 @@ my $testMode=$config->{testmode};
 # Initialize some strings and bind to LDAP
 my $jiraAuthString=GetJiraAuthString();
 my $userAgent=InitUserAgent(); #User agent for HTTP requests
+my @usersDeactivated;
 my $ldap=InitLdap();
 
 # Get the list of Jira users
@@ -26,6 +31,9 @@ my $jiraEmails=GetJiraEmails();
 
 # Sync against your ldap or active directory
 SyncToLdap($jiraEmails);
+
+#Send an email about what just happened
+SendReport();
 
 sub GetJiraEmails {
     InfoMsg("Searching JIRA users letter by letter. This may take a few minutes if you have many.");
@@ -83,6 +91,7 @@ sub SyncToLdap { #This is where the magic happens. You may need to experiment wi
                         InfoMsg($errors);
                     }
                 }
+                push(@usersDeactivated,"$jiraEmails->{$key}");
             }
         }
         $userCount++;
@@ -170,6 +179,40 @@ sub LoadConfig {
     my $string = <FILE>;
     close FILE;
     return(decode_json($string));
+}
+
+sub SendReport{
+    InfoMsg("Sending report.");
+    my $deactivatedUsers;
+    foreach(@usersDeactivated){
+        $deactivatedUsers.="* $_\n";
+    }
+    my $email = Email::Simple::Markdown->create(
+        header => [
+            From    => $config->{report}->{from},
+            To      => $config->{report}->{to},
+            Subject => $config->{report}->{subject},
+        ],
+        body => qq^##JIRA Sync Report
+The following users were removed from all groups in JIRA. You still need to deactivate them in the JIRA user [admin]($config->{jira}->{host}/admin/users),
+since the API doesn't allow deactivation.
+####Deactivated Users:
+$deactivatedUsers
+                ^,
+    );
+    try {
+    sendmail(
+      $email,
+      {
+        transport => Email::Sender::Transport::SMTP->new({
+            host => $config->{report}->{smtp},
+            port => $config->{report}->{smtpport},
+        })
+      }
+    );
+    } catch {
+      warn "sending failed: $_";
+    };
 }
 
 sub DebugMsg {

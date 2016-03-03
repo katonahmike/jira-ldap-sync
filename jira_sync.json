@@ -10,7 +10,7 @@
           "searchfilter" : "(&(userprincipalname=REPLACEWITHJIRAEMAIL))", //Whatever ldap/ad property has the email address leave the =REPLACEWITHJIRAEMAIL part alone; the script needs it 
            "searchscope" : "sub",
         "activeproperty" : "userAccountControl",
-           "activevalue" : "512"
+           "activevalue" : "512" //If UserAccountControl is not 512, the user will be deactivated
     },
     
     "jira" : {
@@ -19,5 +19,13 @@
               "user" : "john.doe@somedomain.com",  //Your JIRA email or username. Best to use a dedicatd JIRA account with admin rights for this so you don't expose yours
           "password" : "supersecret",
         "useragent" : "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36" //In case JIRA cares
+    },
+    
+    "report" : {
+           "smtp" : "smtp.somedomain.com", //An open relay inside your company
+        "smtpport": 25,
+           "from" : "john.doe@somedomain.com",
+             "to" : "john.doe@somedomain.com, foo.bar@somedomain.com", //A comma-separated list of people who should get the report
+        "subject" : "JIRA LDAP Sync Report"
     }
 }
